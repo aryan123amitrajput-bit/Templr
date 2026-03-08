@@ -1,202 +1,251 @@
 import React, { useMemo, useState } from 'react';
 
-type BurstHeart = {
+type BurstParticle = {
   id: number;
   x: number;
   y: number;
   rotate: number;
   size: number;
   delay: number;
+  color: string;
 };
 
-const HEART_COLORS = ['#ff4d8d', '#ff6fa5', '#ff8fb8', '#ff3f7a', '#ff9ec5'];
+const COLORS = ['#ff2f74', '#ff4f8d', '#ff6ba5', '#ff8cc0', '#ffa8d2', '#ffd3e8'];
 
 const App: React.FC = () => {
   const [liked, setLiked] = useState(false);
-  const [pulseTick, setPulseTick] = useState(0);
+  const [tick, setTick] = useState(0);
 
-  const burstHearts = useMemo<BurstHeart[]>(() => {
-    return Array.from({ length: 14 }, (_, index) => ({
-      id: index,
-      x: Math.cos((index / 14) * Math.PI * 2) * (78 + (index % 3) * 12),
-      y: Math.sin((index / 14) * Math.PI * 2) * (78 + ((index + 1) % 3) * 10),
-      rotate: -20 + index * 6,
-      size: 14 + (index % 4) * 3,
-      delay: index * 18,
-    }));
+  const particles = useMemo<BurstParticle[]>(() => {
+    return Array.from({ length: 18 }, (_, i) => {
+      const angle = (i / 18) * Math.PI * 2;
+      const radius = 84 + (i % 4) * 14;
+
+      return {
+        id: i,
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        rotate: -30 + i * 8,
+        size: 10 + (i % 5) * 3,
+        delay: i * 14,
+        color: COLORS[i % COLORS.length],
+      };
+    });
   }, []);
 
-  const onToggleLike = () => {
+  const handleLike = () => {
     setLiked((prev) => !prev);
-    setPulseTick((prev) => prev + 1);
+    setTick((prev) => prev + 1);
   };
 
   return (
-    <main className="stage">
+    <main className="screen">
       <style>{`
         * { box-sizing: border-box; }
-        html, body, #root { margin: 0; height: 100%; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        html, body, #root { margin: 0; min-height: 100%; }
 
-        .stage {
+        .screen {
           min-height: 100vh;
           display: grid;
           place-items: center;
-          background:
-            radial-gradient(circle at 20% 20%, rgba(255, 100, 170, 0.2), transparent 40%),
-            radial-gradient(circle at 80% 10%, rgba(148, 61, 255, 0.16), transparent 34%),
-            radial-gradient(circle at 50% 100%, rgba(255, 72, 131, 0.18), transparent 42%),
-            #000;
           overflow: hidden;
+          background:
+            radial-gradient(circle at 50% 120%, rgba(255, 48, 126, 0.26), transparent 42%),
+            radial-gradient(circle at 14% 6%, rgba(255, 104, 170, 0.16), transparent 38%),
+            radial-gradient(circle at 88% 8%, rgba(145, 68, 255, 0.16), transparent 36%),
+            #000;
         }
 
-        .like-wrap {
+        .like-zone {
           position: relative;
-          width: 220px;
-          height: 220px;
+          width: 280px;
+          height: 280px;
           display: grid;
           place-items: center;
         }
 
-        .ring {
+        .halo {
+          position: absolute;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 138, 191, 0.4);
+          box-shadow: 0 0 30px rgba(255, 96, 164, 0.28), inset 0 0 26px rgba(255, 96, 164, 0.18);
+          animation: haloPulse 3.2s ease-out infinite;
+        }
+
+        .halo.h1 { width: 160px; height: 160px; }
+        .halo.h2 { width: 198px; height: 198px; animation-delay: 0.55s; opacity: 0.7; }
+        .halo.h3 { width: 236px; height: 236px; animation-delay: 1.1s; opacity: 0.45; }
+
+        .like-btn {
+          position: relative;
+          z-index: 2;
+          width: 130px;
+          height: 130px;
+          padding: 0;
+          border: 0;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          background:
+            radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.22), transparent 46%),
+            linear-gradient(160deg, #311224, #17050f 62%, #0d0308);
+          box-shadow:
+            0 30px 46px rgba(0, 0, 0, 0.78),
+            0 0 34px rgba(255, 70, 145, 0.26),
+            inset 0 2px 10px rgba(255, 255, 255, 0.15),
+            inset 0 -12px 18px rgba(0, 0, 0, 0.58);
+          transition: transform 240ms cubic-bezier(.2,.9,.2,1.2), box-shadow 240ms ease;
+        }
+
+        .like-btn:hover {
+          transform: translateY(-5px) scale(1.04);
+          box-shadow:
+            0 34px 58px rgba(0, 0, 0, 0.82),
+            0 0 46px rgba(255, 78, 150, 0.42),
+            inset 0 2px 10px rgba(255, 255, 255, 0.16),
+            inset 0 -12px 18px rgba(0, 0, 0, 0.52);
+        }
+
+        .like-btn:active { transform: scale(0.94); }
+
+        .heart {
+          display: block;
+          width: 62px;
+          height: 62px;
+          color: #f7a0c7;
+          transform-origin: center;
+          filter: drop-shadow(0 2px 10px rgba(255, 120, 172, 0.4));
+          transition: color 280ms ease, filter 280ms ease;
+        }
+
+        .liked .heart {
+          color: #ff2c75;
+          filter: drop-shadow(0 0 26px rgba(255, 51, 128, 0.95));
+          animation: heartbeat 760ms cubic-bezier(.16,.8,.22,1);
+        }
+
+        .shine {
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%);
+          transform: translateX(-160%) rotate(10deg);
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .liked .shine { animation: sweep 900ms ease-out; }
+
+        .shockwave {
           position: absolute;
           width: 140px;
           height: 140px;
           border-radius: 999px;
-          border: 1.5px solid rgba(255, 140, 185, 0.4);
-          animation: ringPulse 2.8s ease-out infinite;
-          filter: drop-shadow(0 0 14px rgba(255, 95, 160, 0.5));
-        }
-
-        .ring.two { width: 168px; height: 168px; animation-delay: 0.4s; opacity: 0.7; }
-        .ring.three { width: 196px; height: 196px; animation-delay: 0.8s; opacity: 0.5; }
-
-        .like-btn {
-          position: relative;
-          width: 120px;
-          height: 120px;
-          border: none;
-          border-radius: 999px;
-          cursor: pointer;
-          background: linear-gradient(160deg, #2d0f1f, #190510);
-          box-shadow:
-            0 20px 36px rgba(0, 0, 0, 0.7),
-            inset 0 2px 10px rgba(255, 255, 255, 0.08),
-            inset 0 -6px 14px rgba(0, 0, 0, 0.55);
-          transform: translateZ(0);
-          transition: transform 230ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 230ms ease;
-          outline: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .like-btn:hover {
-          transform: translateY(-3px) scale(1.03);
-          box-shadow:
-            0 24px 44px rgba(0, 0, 0, 0.76),
-            0 0 26px rgba(255, 75, 145, 0.38),
-            inset 0 2px 10px rgba(255, 255, 255, 0.1),
-            inset 0 -6px 14px rgba(0, 0, 0, 0.5);
-        }
-
-        .like-btn:active { transform: translateY(0) scale(0.95); }
-
-        .heart {
-          width: 56px;
-          height: 56px;
-          color: #fd95be;
-          filter: drop-shadow(0 2px 10px rgba(255, 88, 153, 0.36));
-          transition: transform 320ms cubic-bezier(0.17, 0.89, 0.32, 1.28), color 240ms ease, filter 240ms ease;
-        }
-
-        .liked .heart {
-          color: #ff3b82;
-          transform: scale(1.18);
-          filter: drop-shadow(0 0 18px rgba(255, 65, 142, 0.9));
-          animation: heartBeat 560ms cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .pulse-overlay {
-          position: absolute;
-          width: 120px;
-          height: 120px;
-          border-radius: 999px;
+          border: 2px solid rgba(255, 83, 153, 0.86);
+          box-shadow: 0 0 40px rgba(255, 83, 153, 0.5);
+          animation: shock 720ms cubic-bezier(.2,.8,.2,1) forwards;
           pointer-events: none;
-          border: 2px solid rgba(255, 79, 148, 0.72);
-          animation: burstRing 680ms ease-out forwards;
+          z-index: 1;
         }
 
-        .burst {
+        .particle {
           position: absolute;
-          pointer-events: none;
+          z-index: 3;
           opacity: 0;
+          pointer-events: none;
         }
 
-        .liked .burst {
-          animation: flyOut 760ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+        .liked .particle {
+          animation: burst 900ms cubic-bezier(.14,.75,.2,1) forwards;
           animation-delay: var(--delay);
         }
 
-        @keyframes heartBeat {
-          0% { transform: scale(0.85); }
-          35% { transform: scale(1.25); }
-          55% { transform: scale(1.08); }
-          100% { transform: scale(1.18); }
+        .particle.spark {
+          width: 4px;
+          height: 24px;
+          border-radius: 999px;
+          background: linear-gradient(to top, transparent, var(--color), transparent);
+          filter: drop-shadow(0 0 8px var(--color));
         }
 
-        @keyframes ringPulse {
-          0% { transform: scale(0.86); opacity: 0; }
-          40% { opacity: 0.62; }
-          100% { transform: scale(1.13); opacity: 0; }
+        @keyframes heartbeat {
+          0% { transform: scale(.78); }
+          24% { transform: scale(1.28); }
+          46% { transform: scale(.98); }
+          66% { transform: scale(1.18); }
+          100% { transform: scale(1.12); }
         }
 
-        @keyframes flyOut {
-          0% {
-            opacity: 0;
-            transform: translate(0, 0) scale(0.7) rotate(0deg);
-          }
-          20% { opacity: 1; }
-          100% {
-            opacity: 0;
-            transform: translate(var(--x), var(--y)) scale(0.2) rotate(var(--rotate));
-          }
+        @keyframes haloPulse {
+          0% { opacity: 0; transform: scale(0.86); }
+          35% { opacity: .55; }
+          100% { opacity: 0; transform: scale(1.16); }
         }
 
-        @keyframes burstRing {
-          from { transform: scale(0.8); opacity: 0.95; }
-          to { transform: scale(1.7); opacity: 0; }
+        @keyframes burst {
+          0% { opacity: 0; transform: translate(0, 0) scale(.35) rotate(0deg); }
+          18% { opacity: 1; }
+          100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(.2) rotate(var(--r)); }
+        }
+
+        @keyframes shock {
+          from { transform: scale(.72); opacity: 1; }
+          to { transform: scale(1.86); opacity: 0; }
+        }
+
+        @keyframes sweep {
+          0% { transform: translateX(-160%) rotate(10deg); opacity: 0; }
+          35% { opacity: .95; }
+          100% { transform: translateX(160%) rotate(10deg); opacity: 0; }
         }
       `}</style>
 
-      <section className={`like-wrap ${liked ? 'liked' : ''}`}>
-        <span className="ring" />
-        <span className="ring two" />
-        <span className="ring three" />
+      <section className={`like-zone ${liked ? 'liked' : ''}`}>
+        <span className="halo h1" />
+        <span className="halo h2" />
+        <span className="halo h3" />
 
-        <button className="like-btn" onClick={onToggleLike} aria-label="Like">
+        <button className="like-btn" onClick={handleLike} aria-label="Like">
           <svg viewBox="0 0 24 24" fill="currentColor" className="heart" aria-hidden="true">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
           </svg>
+          <span className="shine" />
         </button>
 
-        <div key={pulseTick} className="pulse-overlay" />
+        {tick > 0 && <div key={`shock-${tick}`} className="shockwave" />}
 
-        {burstHearts.map((item) => (
-          <svg
-            key={`${pulseTick}-${item.id}`}
-            className="burst"
-            viewBox="0 0 24 24"
-            fill={HEART_COLORS[item.id % HEART_COLORS.length]}
-            width={item.size}
-            height={item.size}
-            style={{
-              ['--x' as string]: `${item.x}px`,
-              ['--y' as string]: `${item.y}px`,
-              ['--rotate' as string]: `${item.rotate}deg`,
-              ['--delay' as string]: `${item.delay}ms`,
-            }}
-            aria-hidden="true"
-          >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
+        {particles.map((p) => (
+          <React.Fragment key={`${tick}-${p.id}`}>
+            <svg
+              className="particle"
+              viewBox="0 0 24 24"
+              fill={p.color}
+              width={p.size}
+              height={p.size}
+              style={{
+                ['--x' as string]: `${p.x}px`,
+                ['--y' as string]: `${p.y}px`,
+                ['--r' as string]: `${p.rotate}deg`,
+                ['--delay' as string]: `${p.delay}ms`,
+              }}
+              aria-hidden="true"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+
+            <span
+              className="particle spark"
+              style={{
+                ['--x' as string]: `${p.x * 1.1}px`,
+                ['--y' as string]: `${p.y * 1.1}px`,
+                ['--r' as string]: `${p.rotate + 20}deg`,
+                ['--delay' as string]: `${p.delay + 40}ms`,
+                ['--color' as string]: p.color,
+              }}
+              aria-hidden="true"
+            />
+          </React.Fragment>
         ))}
       </section>
     </main>
