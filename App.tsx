@@ -1,252 +1,223 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import TemplateGallery from './components/TemplateGallery';
-import WhyTemplr from './components/WhyTemplr';
-import FeaturedCreators from './components/FeaturedCreators';
-import CTA from './components/CTA';
-import Footer from './components/Footer';
-import ChatModal from './components/ChatModal';
-import UploadModal from './components/UploadModal';
-import ImageViewerModal from './components/ImageViewerModal';
-import DashboardModal from './components/DashboardModal';
-import LoginModal from './components/LoginModal';
-import Notification from './components/Notification';
-import * as api from './api';
-import { playOpenModalSound, playCloseModalSound, playSuccessSound } from './audio';
-import type { Session, Template, NewTemplateData } from './api';
-
+import React, { useState } from 'react';
 
 const App: React.FC = () => {
-  const [isChatModalOpen, setChatModalOpen] = useState(false);
-  const [chattingWith, setChattingWith] = useState('');
-  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
-  const [isDashboardOpen, setDashboardOpen] = useState(false); 
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false); // Login Modal State
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isViewerOpen, setViewerOpen] = useState(false);
-  const [viewingTemplate, setViewingTemplate] = useState<Template | null>(null);
-  const [notification, setNotification] = useState<string | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [burstKey, setBurstKey] = useState(0);
 
-  // Local User State
-  const [likedTemplateIds, setLikedTemplateIds] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('templr_liked_ids');
-      return new Set(saved ? JSON.parse(saved) : []);
-    } catch (e) {
-      return new Set();
-    }
-  });
-
-  const [viewedTemplateIds, setViewedTemplateIds] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('templr_viewed_ids');
-      return new Set(saved ? JSON.parse(saved) : []);
-    } catch (e) {
-      return new Set();
-    }
-  });
-
-  useEffect(() => {
-    const { data: { subscription } } = api.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-  
-  useEffect(() => {
-    setIsLoading(true);
-    api.listenForTemplates((newTemplates) => {
-      setTemplates(newTemplates);
-      setIsLoading(false);
-    });
-    return () => { api.detachTemplatesListener(); };
-  }, []);
-
-  const displayTemplates = useMemo(() => {
-    return templates.map(t => ({
-      ...t,
-      isLiked: likedTemplateIds.has(t.id)
-    }));
-  }, [templates, likedTemplateIds]);
-
-  const handleOpenChatModal = (creatorName: string) => {
-    playOpenModalSound();
-    setChattingWith(creatorName);
-    setChatModalOpen(true);
-  };
-
-  const handleCloseChatModal = () => {
-    playCloseModalSound();
-    setChatModalOpen(false);
-  };
-
-  const handleOpenUploadModal = () => {
-    playOpenModalSound();
-    setUploadModalOpen(true);
-  };
-
-  const handleCloseUploadModal = () => {
-    playCloseModalSound();
-    setUploadModalOpen(false);
-  };
-
-  const handleOpenDashboard = () => {
-      playOpenModalSound();
-      setDashboardOpen(true);
-  }
-
-  const handleCloseDashboard = () => {
-      playCloseModalSound();
-      setDashboardOpen(false);
-  }
-
-  const handleOpenLoginModal = () => {
-    playOpenModalSound();
-    setLoginModalOpen(true);
-  }
-
-  const handleCloseLoginModal = () => {
-    playCloseModalSound();
-    setLoginModalOpen(false);
-  }
-
-  // Auth Handlers
-  const handleEmailLogin = async (email: string, pass: string) => {
-    await api.signInWithEmail(email, pass);
-  }
-
-  const handleEmailSignup = async (email: string, pass: string, name: string) => {
-    await api.signUpWithEmail(email, pass, name);
-  }
-  
-  const handleSignOut = async () => { await api.signOut(); };
-
-  const handleAddTemplate = async (templateData: NewTemplateData) => {
-    // Session check is now also handled inside UploadModal for better UX
-    if (!session?.user) {
-      setNotification("Please sign in to complete your upload.");
-      handleOpenLoginModal();
-      return;
-    }
-    await api.addTemplate(templateData, session.user);
-    playSuccessSound();
-    setNotification("Design uploaded successfully.");
-  };
-
-  const handleViewClick = (templateId: string) => {
-    const templateToShow = displayTemplates.find(t => t.id === templateId);
-    if (templateToShow) {
-      playOpenModalSound();
-      if (!viewedTemplateIds.has(templateId)) {
-         const updatedViews = templateToShow.views + 1;
-         api.updateTemplate(templateId, { views: updatedViews });
-         const newViewedSet = new Set(viewedTemplateIds);
-         newViewedSet.add(templateId);
-         setViewedTemplateIds(newViewedSet);
-         localStorage.setItem('templr_viewed_ids', JSON.stringify(Array.from(newViewedSet)));
-         setViewingTemplate({ ...templateToShow, views: updatedViews });
-      } else {
-         setViewingTemplate(templateToShow);
-      }
-      setViewerOpen(true);
-    }
-  };
-
-  const handleCloseViewer = () => {
-    playCloseModalSound();
-    setViewerOpen(false);
-    setTimeout(() => setViewingTemplate(null), 300);
-  };
-
-  const handleLikeClick = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
-    if (template) {
-        const isCurrentlyLiked = likedTemplateIds.has(templateId);
-        const newLikes = isCurrentlyLiked ? template.likes - 1 : template.likes + 1;
-        const safeLikes = Math.max(0, newLikes);
-        api.updateTemplate(templateId, { likes: safeLikes });
-        const newLikedSet = new Set(likedTemplateIds);
-        if (isCurrentlyLiked) {
-            newLikedSet.delete(templateId);
-        } else {
-            newLikedSet.add(templateId);
-        }
-        setLikedTemplateIds(newLikedSet);
-        localStorage.setItem('templr_liked_ids', JSON.stringify(Array.from(newLikedSet)));
-    }
+  const handleLikeClick = () => {
+    setLiked((prev) => !prev);
+    setBurstKey((prev) => prev + 1);
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-white font-sans overflow-x-hidden selection:bg-white selection:text-black">
-      <Header 
-        session={session}
-        onUploadClick={handleOpenUploadModal} 
-        onLoginClick={handleOpenLoginModal}
-        onSignOut={handleSignOut}
-        onDashboardClick={handleOpenDashboard}
-      />
-      <main>
-        {/* Components handle their own ScrollReveal animations now */}
-        <Hero onUploadClick={handleOpenUploadModal} />
-        
-        <WhyTemplr />
-        
-        <TemplateGallery 
-          templates={displayTemplates}
-          isLoading={isLoading}
-          onMessageCreator={handleOpenChatModal}
-          onLike={handleLikeClick}
-          onView={handleViewClick}
-        />
-        
-        <FeaturedCreators />
-        
-        <CTA />
-      </main>
-      
-      <Footer onShowNotification={(msg) => setNotification(msg)} />
+    <div className="like-scene">
+      <button
+        type="button"
+        onClick={handleLikeClick}
+        className={`like-button ${liked ? 'is-liked' : ''}`}
+        aria-pressed={liked}
+        aria-label={liked ? 'Unlike this design' : 'Like this design'}
+      >
+        <span className="glow-ring" />
+        <span className="heart-wrap">
+          <svg viewBox="0 0 24 24" className="heart-icon" role="presentation">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.91 3.81 12 5.09 13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </span>
+        <span className="button-text">{liked ? 'Liked' : 'Like'}</span>
+        <span key={burstKey} className="burst" aria-hidden="true">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <span
+              key={index}
+              className="spark"
+              style={{ '--angle': `${index * 36}deg` } as React.CSSProperties}
+            />
+          ))}
+        </span>
+      </button>
 
-      <ChatModal 
-        isOpen={isChatModalOpen} 
-        onClose={handleCloseChatModal} 
-        creatorName={chattingWith} 
-      />
-      <UploadModal 
-        isOpen={isUploadModalOpen}
-        onClose={handleCloseUploadModal}
-        onAddTemplate={handleAddTemplate}
-        onDashboardClick={() => {
-          handleCloseUploadModal();
-          handleOpenDashboard();
-        }}
-        isLoggedIn={!!session}
-        onLoginRequest={handleOpenLoginModal}
-      />
-      <ImageViewerModal
-        isOpen={isViewerOpen}
-        onClose={handleCloseViewer}
-        template={viewingTemplate}
-      />
-      <DashboardModal 
-        isOpen={isDashboardOpen}
-        onClose={handleCloseDashboard}
-        userEmail={session?.user.email}
-      />
-      <LoginModal 
-        isOpen={isLoginModalOpen}
-        onClose={handleCloseLoginModal}
-        onLogin={handleEmailLogin}
-        onSignup={handleEmailSignup}
-      />
-      {notification && (
-        <Notification 
-          message={notification}
-          onClose={() => setNotification(null)}
-        />
-      )}
+      <style>{`
+        :root {
+          color-scheme: dark;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+          font-family: 'Inter', 'Segoe UI', sans-serif;
+          background: #000;
+        }
+
+        .like-scene {
+          min-height: 100vh;
+          display: grid;
+          place-items: center;
+          background:
+            radial-gradient(circle at 30% 25%, rgba(236, 72, 153, 0.17), transparent 40%),
+            radial-gradient(circle at 70% 75%, rgba(59, 130, 246, 0.2), transparent 45%),
+            #000;
+          overflow: hidden;
+          padding: 24px;
+        }
+
+        .like-button {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          border: 0;
+          border-radius: 999px;
+          padding: 18px 38px;
+          cursor: pointer;
+          background: linear-gradient(145deg, #151515, #080808);
+          color: #f4f4f5;
+          font-size: 1.1rem;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          box-shadow:
+            0 20px 45px rgba(236, 72, 153, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+          transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 300ms ease,
+            background 300ms ease;
+          isolation: isolate;
+        }
+
+        .like-button::after {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          border-radius: inherit;
+          background: linear-gradient(90deg, #fb7185, #ec4899, #8b5cf6, #38bdf8);
+          opacity: 0;
+          z-index: -2;
+          transition: opacity 300ms ease;
+          filter: blur(10px);
+        }
+
+        .like-button:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow:
+            0 24px 52px rgba(236, 72, 153, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .like-button:active {
+          transform: translateY(-1px) scale(0.99);
+        }
+
+        .like-button.is-liked {
+          background: linear-gradient(145deg, #3b0f26, #14040d);
+          box-shadow:
+            0 24px 58px rgba(236, 72, 153, 0.45),
+            inset 0 1px 0 rgba(255, 208, 231, 0.32),
+            inset 0 -1px 0 rgba(255, 158, 193, 0.22);
+        }
+
+        .like-button.is-liked::after {
+          opacity: 0.85;
+        }
+
+        .heart-wrap {
+          position: relative;
+          width: 30px;
+          height: 30px;
+          display: grid;
+          place-items: center;
+        }
+
+        .heart-icon {
+          width: 100%;
+          height: 100%;
+          fill: transparent;
+          stroke: #f4f4f5;
+          stroke-width: 1.7;
+          transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+            fill 280ms ease,
+            stroke 280ms ease,
+            filter 280ms ease;
+        }
+
+        .like-button.is-liked .heart-icon {
+          fill: #fb7185;
+          stroke: #ffd8e7;
+          transform: scale(1.12);
+          filter: drop-shadow(0 0 10px rgba(251, 113, 133, 0.75));
+          animation: heartbeat 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .button-text {
+          min-width: 62px;
+          text-align: left;
+        }
+
+        .glow-ring {
+          position: absolute;
+          inset: -9px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.24);
+          opacity: 0;
+          transform: scale(0.94);
+          transition: opacity 320ms ease, transform 320ms ease;
+          z-index: -1;
+        }
+
+        .like-button.is-liked .glow-ring {
+          opacity: 1;
+          transform: scale(1);
+          border-color: rgba(251, 113, 133, 0.7);
+        }
+
+        .burst {
+          position: absolute;
+          inset: 50% auto auto 50%;
+          width: 0;
+          height: 0;
+          pointer-events: none;
+        }
+
+        .spark {
+          --distance: 52px;
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: radial-gradient(circle, #ffd7e6 0%, #fb7185 45%, #ec4899 100%);
+          transform: rotate(var(--angle)) translateY(0);
+          opacity: 0;
+        }
+
+        .like-button.is-liked .spark {
+          animation: pop 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes heartbeat {
+          0% { transform: scale(0.9); }
+          35% { transform: scale(1.27); }
+          60% { transform: scale(1.05); }
+          100% { transform: scale(1.12); }
+        }
+
+        @keyframes pop {
+          0% {
+            transform: rotate(var(--angle)) translateY(0) scale(0.35);
+            opacity: 0;
+          }
+          25% {
+            opacity: 1;
+          }
+          100% {
+            transform: rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(0.9);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };
