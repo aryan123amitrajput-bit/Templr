@@ -85,6 +85,29 @@ export interface Template {
   earnings: number;
 }
 
+const FACEBOOK_HOST_PATTERNS = [
+  /(^|\.)fbcdn\.net$/i,
+  /(^|\.)facebook\.com$/i,
+  /(^|\.)fbsbx\.com$/i,
+  /^scontent\./i,
+];
+
+const isFacebookCdnUrl = (input: string): boolean => {
+  try {
+    const parsed = new URL(input);
+    return FACEBOOK_HOST_PATTERNS.some((pattern) => pattern.test(parsed.hostname));
+  } catch {
+    return false;
+  }
+};
+
+const toProxiedImageUrl = (url?: string): string => {
+  if (!url) return '';
+  if (url.startsWith('/api/fb-image?url=')) return url;
+  if (isFacebookCdnUrl(url)) return `/api/fb-image?url=${encodeURIComponent(url)}`;
+  return url;
+};
+
 // --- AUTHENTICATION ---
 
 export const signInWithEmail = async (email: string, pass: string) => {
@@ -162,6 +185,36 @@ export const uploadFile = async (file: File, path: string, onProgress?: (progres
         return Promise.reject(new Error("File is empty (0 bytes). Please select a valid file."));
     }
 
+    if (file.type.startsWith('image/')) {
+        if (onProgress) onProgress(15);
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error('Failed to read image file'));
+            reader.readAsDataURL(file);
+        });
+
+        const uploadResp = await fetch('/api/fb-upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                imageBase64: dataUrl,
+                fileName: file.name,
+                mimeType: file.type
+            }),
+        });
+        const uploadJson = await uploadResp.json();
+
+        if (!uploadResp.ok || !uploadJson?.success) {
+            throw new Error(uploadJson?.error || `Facebook upload failed with status ${uploadResp.status}`);
+        }
+
+        if (onProgress) onProgress(100);
+        return uploadJson.proxiedUrl || uploadJson.url;
+    }
+
     return new Promise((resolve, reject) => {
         const sRef = storageRef(storage, path);
         
@@ -229,7 +282,8 @@ export const listenForTemplates = (callback: (templates: Template[]) => void) =>
             // Convert object to array
             const loadedTemplates: Template[] = Object.entries(data).map(([key, value]: [string, any]) => ({
                 id: key,
-                ...value
+                ...value,
+                imageUrl: toProxiedImageUrl(value.imageUrl)
             }));
             callback(loadedTemplates.reverse());
         } else {
@@ -281,7 +335,7 @@ export const addTemplate = async (templateData: NewTemplateData, user: Session['
 
     const newTemplate = {
         title: templateData.title,
-        imageUrl: templateData.imageUrl || 'https://picsum.photos/seed/placeholder/600/400',
+        imageUrl: toProxiedImageUrl(templateData.imageUrl) || 'https://picsum.photos/seed/placeholder/600/400',
         description: templateData.description,
         category: templateData.category,
         price: templateData.price,
