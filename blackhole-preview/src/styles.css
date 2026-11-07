@@ -1,0 +1,997 @@
+/* ============================================================
+   Black Hole Delete — page + component styles
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------- page ---------------- */
+
+.page {
+  min-height: 100vh;
+  padding: 48px 24px 64px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero .accent {
+  background: linear-gradient(120deg, #ff8a3d, #ff5e3a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero .sub {
+  margin: 0 auto;
+  max-width: 560px;
+  color: #8a8a8a;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.hero code,
+.panel code,
+.footer code,
+.log code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.92em;
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 460px) minmax(320px, 420px);
+  gap: 32px;
+  align-items: start;
+  justify-content: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.col-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.demo-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  border: 1px solid #2a2a2a;
+  background: #0e0e0e;
+  color: #d8d8d8;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.btn:hover {
+  border-color: #ff8a3d;
+  background: #141414;
+}
+
+/* ---------------- log ---------------- */
+
+.log {
+  width: 100%;
+  max-width: 440px;
+  background: #0a0a0a;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.log-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5c5c5c;
+  margin-bottom: 8px;
+}
+
+.log-empty {
+  color: #555;
+  font-size: 12px;
+}
+
+.log-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed #1c1c1c;
+}
+
+.log-tag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #161616;
+  border: 1px solid #262626;
+  color: #ff8a3d;
+  flex: none;
+}
+
+/* ---------------- panels ---------------- */
+
+.panel {
+  background: #080808;
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #ddd;
+}
+
+.ctrl {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.ctrl-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 7px;
+}
+
+.ctrl-label code {
+  color: #ff8a3d;
+}
+
+.ctrl-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch.on {
+  border-color: #fff;
+}
+
+.ctrl input[type='color'] {
+  width: 34px;
+  height: 24px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #0e0e0e;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.ctrl input[type='range'] {
+  width: 100%;
+  accent-color: #ff8a3d;
+}
+
+.ctrl-check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: #bbb;
+  margin-bottom: 10px;
+}
+
+.ctrl-check input {
+  accent-color: #ff8a3d;
+  width: 16px;
+  height: 16px;
+}
+
+.evidence {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: #a8a8a8;
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
+.evidence li {
+  margin-bottom: 6px;
+}
+
+.note {
+  margin: 0;
+  font-size: 11.5px;
+  color: #666;
+  line-height: 1.6;
+  border-top: 1px solid #1c1c1c;
+  padding-top: 12px;
+}
+
+.footer {
+  text-align: center;
+  color: #555;
+  font-size: 12px;
+  margin-top: 40px;
+}
+
+/* ============================================================
+   Component: BlackHoleDelete
+   ============================================================ */
+
+.bhd-card {
+  position: relative;
+  background: #080808;
+  border: 1px solid #1f1f1f;
+  border-radius: 16px;
+  padding: 14px;
+  width: var(--w, 380px);
+  max-width: calc(100vw - 32px);
+  margin: 0 auto;
+}
+
+.bhd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.bhd-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+
+.bhd-count {
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+.bhd-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.bhd-selectall {
+  font-size: 12px;
+  color: #8a8a8a;
+  background: transparent;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.bhd-selectall:hover {
+  color: #fff;
+  border-color: #3a3a3a;
+  background: #141414;
+}
+
+.bhd-deletesel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--rim, #ff8a3d);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.bhd-deletesel:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.bhd-deletesel:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.bhd-deletesel:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bhd-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid #3a3a3a;
+  background: #141414;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+  color: #fff;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.bhd-check--on {
+  border-color: var(--rim, #ff8a3d);
+  background: var(--rim, #ff8a3d);
+}
+
+.bhd-row--selected {
+  border-color: #2c2c2c;
+  background: #121212;
+}
+
+.bhd-spin {
+  animation: bhd-spin 0.9s linear infinite;
+}
+
+@keyframes bhd-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bhd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid #1c1c1c;
+}
+
+.bhd-row--fade {
+  animation: bhd-fade-in 0.32s ease-out;
+}
+
+.bhd-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex: none;
+}
+
+.bhd-rowtext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.bhd-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bhd-meta {
+  font-size: 11px;
+  color: #777;
+}
+
+.bhd-delete {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #161616;
+  cursor: pointer;
+  font-size: 16px;
+  flex: none;
+  line-height: 1;
+}
+
+.bhd-delete:hover {
+  background: #1f1f1f;
+}
+
+.bhd-delete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.bhd-empty {
+  color: #6b6b6b;
+  font-size: 13px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* ---------------- black hole bin ---------------- */
+
+.bhd-bin-anchor {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.bhd-bin {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  position: relative;
+  background: #000;
+  border: 2px solid var(--rim);
+  box-shadow:
+    0 8px 30px -8px var(--rim),
+    0 0 30px -6px var(--rim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bhd-pulse 0.5s ease-out;
+}
+
+.bhd-bin__swirl {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--rim) 35deg,
+    transparent 80deg,
+    var(--rim) 125deg,
+    transparent 180deg,
+    var(--rim) 225deg,
+    transparent 280deg
+  );
+  animation: bhd-swirl 4.2s linear infinite;
+  opacity: 0.92;
+}
+
+.bhd-bin__core {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bhd-bin__core::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: #050505;
+}
+
+.bhd-bin__orbit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  animation: bhd-swirl 9s linear infinite reverse;
+}
+
+.bhd-debris-wrap {
+  position: relative;
+  transform-origin: center center;
+}
+
+.bhd-debris {
+  position: absolute;
+  top: -44px;
+  border-radius: 3px;
+  box-shadow: 0 0 6px #fff3e0;
+}
+
+/* ---------------- overlay (falling / restoring rows + particles) ---------------- */
+
+.bhd-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.bhd-overlay-row {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid color-mix(in srgb, var(--rim) 35%, transparent);
+  will-change: transform, opacity;
+}
+
+.bhd-particle {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+/* ---------------- undo snackbar ---------------- */
+
+.bhd-snackbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #111;
+  border: 1px solid #222;
+}
+
+.bhd-snack-text {
+  font-size: 13px;
+  color: #ddd;
+}
+
+.bhd-undo {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.bhd-undo:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+
+/* Row falling into the hole: translate down, wind round, shrink, fade. */
+@keyframes bhd-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--dist)) rotate(var(--spin)) scale(0.15);
+    opacity: 0;
+  }
+}
+
+/* Undo with swirl: item emerges from the bin and unwinds back to its row. */
+@keyframes bhd-swirl-out {
+  0% {
+    transform: translateY(var(--dist)) rotate(var(--spin)) scale(0.15);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Debris shed by a falling item. */
+@keyframes bhd-particle {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* Bin consuming an item. */
+@keyframes bhd-pulse {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Continuous swirl of the mouth and debris orbit. */
+@keyframes bhd-swirl {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Rows fading back in (undo without swirl). */
+@keyframes bhd-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   Nav (two demos)
+   ============================================================ */
+
+.nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1px solid #2a2a2a;
+  background: #0e0e0e;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.nav-btn:hover {
+  border-color: #ff8a3d;
+}
+
+.nav-btn.on {
+  border-color: #ff8a3d;
+  color: #ff8a3d;
+  background: #141414;
+}
+
+.howto {
+  margin-top: 18px;
+  border-top: 1px solid #1c1c1c;
+  padding-top: 14px;
+}
+
+.evidence.ol {
+  padding-left: 20px;
+}
+
+/* ============================================================
+   Component: BlackHoleTrash (select → black hole, physics)
+   ============================================================ */
+
+.bht-card {
+  position: relative;
+  background: #080808;
+  border: 1px solid #1f1f1f;
+  border-radius: 16px;
+  padding: 14px;
+  width: var(--w, 380px);
+  max-width: calc(100vw - 32px);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.bht-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.bht-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+
+.bht-count {
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+.bht-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid #1c1c1c;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.bht-row:hover {
+  border-color: #2a2a2a;
+}
+
+.bht-row--sel {
+  border-color: var(--rim);
+  background: color-mix(in srgb, var(--rim) 7%, #0f0f0f);
+}
+
+.bht-row--dissolve {
+  animation: bht-dissolve 0.4s cubic-bezier(0.4, 0, 0.7, 0.4) forwards;
+  pointer-events: none;
+}
+
+@keyframes bht-dissolve {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+
+.bht-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #000;
+  flex: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.bht-check.on {
+  border-color: var(--rim);
+  background: var(--rim);
+}
+
+.bht-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex: none;
+}
+
+.bht-rowtext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.bht-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bht-meta {
+  font-size: 11px;
+  color: #777;
+}
+
+.bht-empty {
+  color: #6b6b6b;
+  font-size: 13px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* Trigger area */
+
+.bht-trigger-anchor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 18px;
+  min-height: 96px;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.bht-trash {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid #2a2a2a;
+  background: #111;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 8px 24px -10px rgba(0, 0, 0, 0.8),
+    0 0 0 0 transparent;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.bht-trash.armed {
+  border-color: var(--rim);
+  box-shadow:
+    0 0 22px -4px var(--rim),
+    0 0 0 2px color-mix(in srgb, var(--rim) 30%, transparent);
+  animation: bht-armed-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes bht-armed-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 22px -4px var(--rim),
+      0 0 0 2px color-mix(in srgb, var(--rim) 30%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 34px 2px var(--rim),
+      0 0 0 4px color-mix(in srgb, var(--rim) 45%, transparent);
+  }
+}
+
+.bht-trash.shake {
+  animation: bht-shake 0.36s ease-in-out;
+}
+
+@keyframes bht-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-6deg);
+  }
+  40% {
+    transform: translateX(6px) rotate(6deg);
+  }
+  60% {
+    transform: translateX(-4px) rotate(-4deg);
+  }
+  80% {
+    transform: translateX(4px) rotate(4deg);
+  }
+}
+
+/* The black hole tap target (sits over the canvas hole) */
+
+.bht-hole-btn {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.bht-hole-btn:disabled {
+  cursor: default;
+}
+
+.bht-hole-pulse {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 30px -6px var(--rim),
+    0 0 0 2px color-mix(in srgb, var(--rim) 55%, transparent);
+  animation: bht-hole-idle 3s ease-in-out infinite;
+}
+
+.bht-hole-btn.armed .bht-hole-pulse {
+  animation: bht-armed-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes bht-hole-idle {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.bht-armed-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rim);
+}
+
+/* Canvas */
+
+.bht-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
