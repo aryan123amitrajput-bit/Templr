@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Apple Fitness — Liquid Glass NavBar (Flutter liquid_glass_renderer + React Native)</title>
+  <style>
+    :root {
+      --bg-deep: #05060a;
+      --card-bg: rgba(22, 24, 36, 0.72);
+      --move-red: #fa114f;
+      --exercise-lime: #a6ff00;
+      --stand-cyan: #00f5ea;
+      --heart-rose: #ff2d55;
+      --sharing-amber: #ff9f0a;
+      --glass-tint-alpha: 0.11;
+      --glass-blur: 22px;
+      --glass-border-alpha: 0.36;
+      --active-accent: #fa114f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #141829 0%, #05060a 65%);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+      overflow-x: hidden;
+    }
+
+    /* Top Mode Switcher (Preview vs Flutter Code vs React Native Code) */
+    .workspace-header {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--move-red), var(--sharing-amber));
+      color: #fff;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .brand-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .mode-switcher {
+      display: flex;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 5px;
+      border-radius: 999px;
+      backdrop-filter: blur(18px);
+    }
+
+    .mode-btn {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.68);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mode-btn.active {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    /* Main Layout Grid */
+    .stage-grid {
+      width: 100%;
+      max-width: 1080px;
+      display: grid;
+      grid-template-columns: 410px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .stage-grid {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+    }
+
+    /* iPhone 17 Pro Frame */
+    .iphone-shell {
+      width: 392px;
+      height: 812px;
+      background: #05060a;
+      border-radius: 54px;
+      border: 10px solid #1d202b;
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.78),
+        0 0 0 1.5px rgba(255, 255, 255, 0.18),
+        inset 0 0 24px rgba(255, 255, 255, 0.04);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dynamic-island {
+      width: 120px;
+      height: 32px;
+      background: #000;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .island-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--exercise-lime);
+      box-shadow: 0 0 8px var(--exercise-lime);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.25); opacity: 1; }
+    }
+
+    /* Ambient Glowing Blobs that refract under the Liquid Glass bar */
+    .ambient-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(48px);
+      opacity: 0.34;
+      transition: all 0.7s ease;
+    }
+
+    .orb-1 {
+      width: 240px;
+      height: 240px;
+      background: var(--move-red);
+      top: 65px;
+      left: -60px;
+    }
+
+    .orb-2 {
+      width: 260px;
+      height: 260px;
+      background: var(--exercise-lime);
+      top: 340px;
+      right: -75px;
+    }
+
+    .orb-3 {
+      width: 230px;
+      height: 230px;
+      background: var(--stand-cyan);
+      bottom: 20px;
+      left: 35px;
+    }
+
+    /* Scrollable Fitness Screen Content */
+    .screen-scroll {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      overflow-y: auto;
+      padding: 56px 18px 168px;
+      scrollbar-width: none;
+    }
+    .screen-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .screen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .date-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: rgba(235, 235, 245, 0.58);
+      text-transform: uppercase;
+    }
+
+    .screen-title {
+      font-size: 29px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      margin-top: 2px;
+    }
+
+    /* React Native Liquid Glass Button */
+    .rn-liquid-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1.2px solid rgba(255, 255, 255, 0.38);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(20px) saturate(190%);
+      -webkit-backdrop-filter: blur(20px) saturate(190%);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.36),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+        inset 0 -1.5px 2px rgba(0, 245, 234, 0.28);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .rn-liquid-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .rn-liquid-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.24);
+      box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 18px var(--active-accent),
+        inset 0 2px 3px rgba(255, 255, 255, 0.85);
+    }
+
+    /* Fitness Glass Card */
+    .fitness-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 26px;
+      padding: 18px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(16px);
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      color: rgba(235, 235, 245, 0.48);
+      font-weight: 600;
+    }
+
+    .rings-layout {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .rings-svg-wrap {
+      width: 142px;
+      height: 142px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rings-pct-center {
+      position: absolute;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .rings-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .stat-kicker {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+    }
+
+    .stat-val {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .stat-unit {
+      font-size: 11px;
+      color: rgba(235, 235, 245, 0.56);
+      font-weight: 700;
+    }
+
+    /* Workout Preset Items */
+    .workout-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 22px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.2s ease;
+    }
+
+    .workout-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .workout-item.active-workout {
+      border-color: var(--exercise-lime);
+      background: rgba(166, 255, 0, 0.11);
+    }
+
+    .workout-icon-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .workout-meta {
+      flex: 1;
+    }
+
+    .workout-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .workout-sub {
+      font-size: 11.5px;
+      color: rgba(235, 235, 245, 0.58);
+      margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       APPLE iOS 26 / 27 LIQUID GLASS NAVIGATION BAR (liquid_glass_renderer)
+       ========================================================================== */
+    .liquid-navbar-dock {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 18px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    /* Live Workout Accessory Capsule above NavBar (LiquidGlass.grouped) */
+    .liquid-accessory-capsule {
+      pointer-events: auto;
+      height: 46px;
+      border-radius: 23px;
+      padding: 0 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: url(#liquid-bevel-refraction) blur(var(--glass-blur)) saturate(200%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(200%);
+      border: 1.2px solid rgba(255, 255, 255, var(--glass-border-alpha));
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.5),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.6),
+        inset 0 -1px 2px rgba(166, 255, 0, 0.35);
+      animation: slideUpCapsule 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .liquid-accessory-capsule.visible {
+      display: flex;
+    }
+
+    @keyframes slideUpCapsule {
+      from { opacity: 0; transform: translateY(14px) scale(0.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .liquid-bottom-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      pointer-events: auto;
+    }
+
+    /* Main Liquid Glass Tab Capsule */
+    .liquid-tab-capsule {
+      position: relative;
+      flex: 1;
+      height: 64px;
+      border-radius: 32px;
+      padding: 5px;
+      background: rgba(20, 22, 32, calc(0.55 + var(--glass-tint-alpha)));
+      backdrop-filter: url(#liquid-bevel-refraction) blur(var(--glass-blur)) saturate(210%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(210%);
+      border: 1.2px solid rgba(255, 255, 255, var(--glass-border-alpha));
+      box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.62),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.58),
+        inset 0 -1.5px 2px rgba(0, 245, 234, 0.25);
+      display: flex;
+      align-items: center;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+    }
+
+    .liquid-tab-capsule.pressing {
+      transform: scale(1.035);
+    }
+
+    /* Sliding Refractive Liquid Glass Loupe Pill (LiquidGlass.withOwnLayer) */
+    .liquid-loupe-pill {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      left: 5px;
+      width: calc((100% - 10px) / 5);
+      border-radius: 27px;
+      background: radial-gradient(
+        120% 100% at 50% 0%,
+        rgba(255, 255, 255, 0.28) 0%,
+        rgba(255, 255, 255, 0.10) 100%
+      );
+      border: 1.2px solid rgba(255, 255, 255, 0.55);
+      box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        0 0 20px var(--active-accent),
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.8),
+        inset 0 -1.5px 3px var(--active-accent);
+      transition: transform 0.38s cubic-bezier(0.28, 1.35, 0.4, 1), box-shadow 0.25s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .tab-slot {
+      flex: 1;
+      height: 100%;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      gap: 2px;
+    }
+
+    .tab-icon {
+      font-size: 19px;
+      transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+      color: rgba(235, 235, 245, 0.62);
+    }
+
+    .tab-slot.selected .tab-icon {
+      transform: scale(1.16);
+      color: var(--active-accent);
+    }
+
+    .tab-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(235, 235, 245, 0.52);
+      transition: color 0.2s ease;
+    }
+
+    .tab-slot.selected .tab-label {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .tab-badge {
+      position: absolute;
+      top: 4px;
+      right: 10px;
+      background: var(--move-red);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 4.5px;
+      border-radius: 8px;
+    }
+
+    /* Detached Floating Liquid Glass Action Orb (LiquidOval in LiquidGlassBlendGroup) */
+    .liquid-action-orb {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: rgba(166, 255, 0, 0.16);
+      backdrop-filter: url(#liquid-bevel-refraction) blur(var(--glass-blur)) saturate(210%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(210%);
+      border: 1.3px solid rgba(255, 255, 255, 0.48);
+      box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.6),
+        0 0 18px rgba(166, 255, 0, 0.25),
+        inset 0 2px 2px rgba(255, 255, 255, 0.72),
+        inset 0 -2px 3px rgba(166, 255, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--exercise-lime);
+      cursor: pointer;
+      transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+    }
+
+    .liquid-action-orb:hover {
+      transform: scale(1.06);
+    }
+
+    .liquid-action-orb:active {
+      transform: scale(0.9);
+    }
+
+    .liquid-action-orb.workout-running {
+      background: rgba(250, 17, 79, 0.22);
+      color: var(--move-red);
+      box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.6),
+        0 0 22px rgba(250, 17, 79, 0.45),
+        inset 0 2px 2px rgba(255, 255, 255, 0.72);
+    }
+
+    /* Right Column: Optics Controls & Code Inspector */
+    .inspector-panel {
+      background: rgba(18, 20, 30, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 28px;
+      padding: 24px;
+      backdrop-filter: blur(20px);
+    }
+
+    .inspector-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .inspector-sub {
+      font-size: 13px;
+      color: rgba(235, 235, 245, 0.62);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--stand-cyan);
+      cursor: pointer;
+    }
+
+    .code-box-wrapper {
+      margin-top: 18px;
+      background: #090b12;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .code-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--stand-cyan);
+    }
+
+    .copy-btn {
+      background: rgba(0, 245, 234, 0.16);
+      color: var(--stand-cyan);
+      border: 1px solid rgba(0, 245, 234, 0.4);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    pre {
+      padding: 16px;
+      font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      overflow-x: auto;
+      max-height: 460px;
+      user-select: text;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden SVG Filter for Real-Time Liquid Glass Bevel Refraction -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <filter id="liquid-bevel-refraction" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+        <feDisplacementMap id="svg-displacement" in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Top Header -->
+  <header class="workspace-header">
+    <div class="brand-title">
+      <span class="brand-badge">iOS 27 Liquid Glass</span>
+      <h1>Apple Fitness Liquid Glass NavBar (`liquid_glass_renderer` + React Native)</h1>
+    </div>
+    <div class="mode-switcher">
+      <button class="mode-btn active" onclick="switchCodeTab('flutter', this)">Flutter (`liquid_glass_renderer`)</button>
+      <button class="mode-btn" onclick="switchCodeTab('rn', this)">React Native (`LiquidGlassButton`)</button>
+    </div>
+  </header>
+
+  <main class="stage-grid">
+    <!-- LEFT: Interactive iPhone 17 Pro Live Preview -->
+    <div class="iphone-shell">
+      <div class="dynamic-island">
+        <span style="font-size:10px;font-weight:800;color:#fa114f">FIT</span>
+        <div class="island-dot"></div>
+      </div>
+
+      <!-- Ambient Glowing Blobs (Refracted through the bottom Liquid Glass NavBar) -->
+      <div class="ambient-layer">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+      </div>
+
+      <!-- Scrollable Fitness Screen Content -->
+      <div class="screen-scroll" id="fitness-scroll">
+        <div class="screen-header">
+          <div>
+            <div class="date-kicker">SATURDAY, NOV 7</div>
+            <div class="screen-title" id="screen-tab-title">Summary</div>
+          </div>
+          <button class="rn-liquid-btn" onclick="boostRings()">
+            <span>⚡</span>
+            <span>+Log Ring</span>
+          </button>
+        </div>
+
+        <!-- Triple Activity Rings Card -->
+        <div class="fitness-card">
+          <div class="card-header-row">
+            <span class="card-title">Activity Rings</span>
+            <span class="card-tag">Scroll content behind glass bar ↓</span>
+          </div>
+          <div class="rings-layout">
+            <div class="rings-svg-wrap">
+              <svg width="142" height="142" viewBox="0 0 142 142">
+                <!-- Move Ring -->
+                <circle cx="71" cy="71" r="58" fill="none" stroke="rgba(250,17,79,0.2)" stroke-width="13" />
+                <circle id="ring-move" cx="71" cy="71" r="58" fill="none" stroke="#fa114f" stroke-width="13"
+                  stroke-linecap="round" stroke-dasharray="364" stroke-dashoffset="54"
+                  transform="rotate(-90 71 71)" style="transition: stroke-dashoffset 0.5s ease" />
+                <!-- Exercise Ring -->
+                <circle cx="71" cy="71" r="42" fill="none" stroke="rgba(166,255,0,0.2)" stroke-width="13" />
+                <circle id="ring-exercise" cx="71" cy="71" r="42" fill="none" stroke="#a6ff00" stroke-width="13"
+                  stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="24"
+                  transform="rotate(-90 71 71)" style="transition: stroke-dashoffset 0.5s ease" />
+                <!-- Stand Ring -->
+                <circle cx="71" cy="71" r="26" fill="none" stroke="rgba(0,245,234,0.2)" stroke-width="13" />
+                <circle id="ring-stand" cx="71" cy="71" r="26" fill="none" stroke="#00f5ea" stroke-width="13"
+                  stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="28"
+                  transform="rotate(-90 71 71)" style="transition: stroke-dashoffset 0.5s ease" />
+              </svg>
+              <div class="rings-pct-center" id="ring-pct-text">85%</div>
+            </div>
+            <div class="rings-stats">
+              <div>
+                <div class="stat-kicker" style="color:var(--move-red)">MOVE</div>
+                <div class="stat-val"><span id="val-move">640</span>/750 <span class="stat-unit">KCAL</span></div>
+              </div>
+              <div>
+                <div class="stat-kicker" style="color:var(--exercise-lime)">EXERCISE</div>
+                <div class="stat-val"><span id="val-ex">42</span>/45 <span class="stat-unit">MIN</span></div>
+              </div>
+              <div>
+                <div class="stat-kicker" style="color:var(--stand-cyan)">STAND</div>
+                <div class="stat-val"><span id="val-stand">10</span>/12 <span class="stat-unit">HRS</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- React Native Liquid Glass Buttons Showcase Card -->
+        <div class="fitness-card">
+          <div class="card-header-row">
+            <span class="card-title">React Native Liquid Glass Buttons</span>
+            <span class="card-tag">Press & Hold</span>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="rn-liquid-btn" onclick="toggleWorkout('Outdoor Run', '🏃')">
+              <span>🏃</span><span>Outdoor Run</span>
+            </button>
+            <button class="rn-liquid-btn" onclick="selectTab(3)">
+              <span style="color:var(--heart-rose)">♥</span><span id="bpm-pill">124 BPM</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Workouts List -->
+        <div style="font-size:16px;font-weight:800;margin:12px 0 10px">Quick-Start Workouts</div>
+
+        <div class="workout-item" id="wk-0" onclick="toggleWorkout('Outdoor Run', '🏃', 0)">
+          <div class="workout-icon-circle" style="background:rgba(166,255,0,0.18)">🏃</div>
+          <div class="workout-meta">
+            <div class="workout-name">Outdoor Run</div>
+            <div class="workout-sub">35 min • 420 KCAL • VO₂ Max GPS Pace</div>
+          </div>
+          <span class="rn-liquid-btn" style="padding:6px 12px;font-size:11.5px">Start</span>
+        </div>
+
+        <div class="workout-item" id="wk-1" onclick="toggleWorkout('HIIT Metabolic Blast', '🔥', 1)">
+          <div class="workout-icon-circle" style="background:rgba(250,17,79,0.18)">🔥</div>
+          <div class="workout-meta">
+            <div class="workout-name">HIIT Metabolic Blast</div>
+            <div class="workout-sub">25 min • 390 KCAL • Zone 4–5 Intervals</div>
+          </div>
+          <span class="rn-liquid-btn" style="padding:6px 12px;font-size:11.5px">Start</span>
+        </div>
+
+        <div class="workout-item" id="wk-2" onclick="toggleWorkout('Indoor Cycling', '🚴', 2)">
+          <div class="workout-icon-circle" style="background:rgba(0,245,234,0.18)">🚴</div>
+          <div class="workout-meta">
+            <div class="workout-name">Indoor Cycling</div>
+            <div class="workout-sub">45 min • 510 KCAL • Cadence & Power</div>
+          </div>
+          <span class="rn-liquid-btn" style="padding:6px 12px;font-size:11.5px">Start</span>
+        </div>
+
+        <div class="workout-item" id="wk-3" onclick="toggleWorkout('Functional Strength', '🏋️', 3)">
+          <div class="workout-icon-circle" style="background:rgba(255,159,10,0.18)">🏋️</div>
+          <div class="workout-meta">
+            <div class="workout-name">Functional Strength</div>
+            <div class="workout-sub">40 min • 310 KCAL • Core & Upper</div>
+          </div>
+          <span class="rn-liquid-btn" style="padding:6px 12px;font-size:11.5px">Start</span>
+        </div>
+      </div>
+
+      <!-- FLOATING APPLE LIQUID GLASS NAVIGATION BAR -->
+      <div class="liquid-navbar-dock">
+        <!-- Grouped Live Workout Accessory Capsule -->
+        <div class="liquid-accessory-capsule" id="live-accessory">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700">
+            <span id="acc-icon">🏃</span>
+            <span id="acc-title">Outdoor Run • 124 BPM</span>
+          </div>
+          <button onclick="stopWorkout()" style="background:rgba(250,17,79,0.28);color:#fa114f;border:none;border-radius:10px;padding:4px 9px;font-size:10.5px;font-weight:800;cursor:pointer">
+            END
+          </button>
+        </div>
+
+        <!-- Bottom Row: Tab Bar Capsule + Detached Action Orb -->
+        <div class="liquid-bottom-row">
+          <div class="liquid-tab-capsule" id="tab-capsule">
+            <!-- Sliding Refractive Loupe Pill -->
+            <div class="liquid-loupe-pill" id="loupe-pill"></div>
+
+            <div class="tab-slot selected" onclick="selectTab(0)">
+              <span class="tab-icon">◎</span>
+              <span class="tab-label">Summary</span>
+            </div>
+            <div class="tab-slot" onclick="selectTab(1)">
+              <span class="tab-badge">2</span>
+              <span class="tab-icon">⚡</span>
+              <span class="tab-label">Workouts</span>
+            </div>
+            <div class="tab-slot" onclick="selectTab(2)">
+              <span class="tab-icon">✦</span>
+              <span class="tab-label">Activity</span>
+            </div>
+            <div class="tab-slot" onclick="selectTab(3)">
+              <span class="tab-icon">♥</span>
+              <span class="tab-label">Heart</span>
+            </div>
+            <div class="tab-slot" onclick="selectTab(4)">
+              <span class="tab-icon">◉</span>
+              <span class="tab-label">Sharing</span>
+            </div>
+          </div>
+
+          <!-- Detached Floating Liquid Glass Action Orb -->
+          <button class="liquid-action-orb" id="action-orb" onclick="orbQuickToggle()" title="Quick-Start Workout">
+            ⚡
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Liquid Glass Optics Tuner + Source Code Viewer -->
+    <div class="inspector-panel">
+      <div class="inspector-title">Liquid Glass Optics & Source Code</div>
+      <div class="inspector-sub">
+        Tune the iOS 27 <code>LiquidGlassSettings</code> parameters in real time or copy the
+        complete <code>liquid_glass_renderer</code> (Flutter) &amp; React Native source files.
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>iOS 27 <code>tintAmount</code> Slider (Clear → Tinted)</span>
+          <span id="lbl-tint">0.35</span>
+        </div>
+        <input type="range" min="0" max="1" step="0.05" value="0.35" oninput="updateOptics('tint', this.value)" />
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Bevel <code>refractionAmount</code> (Displacement Scale)</span>
+          <span id="lbl-refract">12 px</span>
+        </div>
+        <input type="range" min="0" max="28" step="1" value="12" oninput="updateOptics('refract', this.value)" />
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Frost Blur (<code>frost</code> pt)</span>
+          <span id="lbl-blur">22 px</span>
+        </div>
+        <input type="range" min="4" max="40" step="1" value="22" oninput="updateOptics('blur', this.value)" />
+      </div>
+
+      <div class="code-box-wrapper">
+        <div class="code-box-header">
+          <span id="code-filename">liquid_glass_fitness_navbar.dart (pub.dev/packages/liquid_glass_renderer)</span>
+          <button class="copy-btn" onclick="copyCurrentCode(this)">Copy Code</button>
+        </div>
+        <pre id="code-content"></pre>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const TAB_META = [
+      { id: 'summary', label: 'Summary', accent: '#fa114f' },
+      { id: 'workouts', label: 'Workouts', accent: '#a6ff00' },
+      { id: 'activity', label: 'Activity', accent: '#00f5ea' },
+      { id: 'heart', label: 'Heart', accent: '#ff2d55' },
+      { id: 'sharing', label: 'Sharing', accent: '#ff9f0a' },
+    ];
+
+    let currentTab = 0;
+    let moveKcal = 640;
+    let exMin = 42;
+    let standHrs = 10;
+    let workoutActive = false;
+
+    function selectTab(index) {
+      currentTab = index;
+      const meta = TAB_META[index];
+      document.documentElement.style.setProperty('--active-accent', meta.accent);
+      document.getElementById('screen-tab-title').textContent = meta.label;
+
+      const slots = document.querySelectorAll('.tab-slot');
+      slots.forEach((s, idx) => s.classList.toggle('selected', idx === index));
+
+      const loupe = document.getElementById('loupe-pill');
+      const capsule = document.getElementById('tab-capsule');
+      capsule.classList.add('pressing');
+      // Jelly squash & stretch during travel
+      loupe.style.transform = `translateX(${index * 100}%) scaleX(1.18) scaleY(0.90)`;
+      setTimeout(() => {
+        loupe.style.transform = `translateX(${index * 100}%) scaleX(1) scaleY(1)`;
+        capsule.classList.remove('pressing');
+      }, 210);
+    }
+
+    function boostRings() {
+      moveKcal = Math.min(950, moveKcal + 45);
+      exMin = Math.min(60, exMin + 4);
+      standHrs = Math.min(12, standHrs + 1);
+      document.getElementById('val-move').textContent = moveKcal;
+      document.getElementById('val-ex').textContent = exMin;
+      document.getElementById('val-stand').textContent = standHrs;
+
+      const pct = Math.round((moveKcal / 750) * 100);
+      document.getElementById('ring-pct-text').textContent = pct + '%';
+      document.getElementById('ring-move').style.strokeDashoffset = Math.max(0, 364 - (364 * Math.min(1, moveKcal / 750)));
+      document.getElementById('ring-exercise').style.strokeDashoffset = Math.max(0, 264 - (264 * Math.min(1, exMin / 45)));
+      document.getElementById('ring-stand').style.strokeDashoffset = Math.max(0, 163 - (163 * Math.min(1, standHrs / 12)));
+    }
+
+    function toggleWorkout(title, icon, idx) {
+      workoutActive = true;
+      document.getElementById('acc-icon').textContent = icon;
+      document.getElementById('acc-title').textContent = `${title} • 128 BPM • ${moveKcal} KCAL`;
+      document.getElementById('live-accessory').classList.add('visible');
+      const orb = document.getElementById('action-orb');
+      orb.classList.add('workout-running');
+      orb.textContent = '■';
+      document.querySelectorAll('.workout-item').forEach((el, i) => {
+        el.classList.toggle('active-workout', i === idx);
+      });
+    }
+
+    function stopWorkout() {
+      workoutActive = false;
+      document.getElementById('live-accessory').classList.remove('visible');
+      const orb = document.getElementById('action-orb');
+      orb.classList.remove('workout-running');
+      orb.textContent = '⚡';
+      document.querySelectorAll('.workout-item').forEach((el) => el.classList.remove('active-workout'));
+    }
+
+    function orbQuickToggle() {
+      if (workoutActive) {
+        stopWorkout();
+      } else {
+        toggleWorkout('Outdoor Run', '🏃', 0);
+      }
+    }
+
+    function updateOptics(type, val) {
+      if (type === 'tint') {
+        document.getElementById('lbl-tint').textContent = Number(val).toFixed(2);
+        document.documentElement.style.setProperty('--glass-tint-alpha', (val * 0.35).toFixed(2));
+      } else if (type === 'refract') {
+        document.getElementById('lbl-refract').textContent = val + ' px';
+        document.getElementById('svg-displacement').setAttribute('scale', val);
+      } else if (type === 'blur') {
+        document.getElementById('lbl-blur').textContent = val + ' px';
+        document.documentElement.style.setProperty('--glass-blur', val + 'px');
+      }
+    }
+
+    const FLUTTER_CODE = `// pubspec.yaml:
+//   liquid_glass_renderer: ^0.2.0 (or ^1.0.0-dev)
+// Full file in repo: ./liquid_glass_fitness_navbar.dart
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LiquidGlass.precache();
+  runApp(const FitnessLiquidGlassApp());
+}
+
+// Inside AppleFitnessLiquidGlassNavBar.build():
+return LiquidGlassCapture(
+  child: LiquidGlassLayer(
+    settings: LiquidGlassSettings.ios27Regular(
+      brightness: Brightness.dark,
+      tintAmount: widget.tintAmount,
+    ),
+    defaultAppearance: const LiquidGlassAppearance.ios27RegularDark(),
+    child: LiquidGlassBlendGroup(
+      blend: 18.0, // Droplets merge within 18 logical px
+      child: Row(
+        children: [
+          Expanded(
+            child: LiquidStretch(
+              interactionScale: 1.035,
+              child: Stack(
+                children: [
+                  LiquidGlass.grouped(
+                    shape: const LiquidRoundedSuperellipse(borderRadius: 32),
+                    child: SizedBox(height: 64, child: tabRow),
+                  ),
+                  // Sliding Refractive Liquid Glass Loupe Pill
+                  Positioned(
+                    left: loupeLeft,
+                    top: 5,
+                    bottom: 5,
+                    width: slotWidth,
+                    child: LiquidGlass.withOwnLayer(
+                      settings: const LiquidGlassSettings(
+                        refractionHeight: 15,
+                        refractionAmount: 12,
+                        refractionFitsShape: false,
+                        dispersion: -0.32,
+                        frost: 0,
+                        backdropShrink: 0.12,
+                      ),
+                      shape: const LiquidRoundedSuperellipse(borderRadius: 28),
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Detached Quick-Workout Liquid Glass Orb
+          LiquidStretch(
+            interactionScale: 1.08,
+            child: LiquidGlass.grouped(
+              shape: const LiquidOval(),
+              child: const SizedBox.square(
+                dimension: 64,
+                child: Icon(CupertinoIcons.bolt_fill, color: Color(0xFFA6FF00)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+);`;
+
+    const RN_CODE = `// Full file in repo: ./LiquidGlassFitnessNavBar.tsx
+// React Native LiquidGlassButton + LiquidGlassNavBar with Flutter MethodChannel bridge
+
+export const LiquidGlassButton: React.FC<LiquidGlassButtonProps> = ({
+  label,
+  icon,
+  onPress,
+  variant = 'pill',
+  tintColor = '#A6FF00',
+  active = false,
+  size = 60,
+}) => {
+  // Spring press physics + specular top glint + chromatic bottom refraction
+  return (
+    <Animated.View style={[styles.buttonShadowWrapper, { transform: [{ scale: scaleAnim }] }]}>
+      <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={handlePress}>
+        <Animated.View style={[styles.liquidButtonBase, boxStyle, { backgroundColor: surfaceTint, borderColor }]}>
+          <View pointerEvents="none" style={styles.buttonTopSpecular} />
+          <View pointerEvents="none" style={styles.buttonBottomRefraction} />
+          <View style={styles.buttonContentRow}>
+            {icon && <Text style={styles.buttonIcon}>{icon}</Text>}
+            {label && <Text style={styles.buttonLabel}>{label}</Text>}
+          </View>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  );
+};`;
+
+    function switchCodeTab(mode, btn) {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (mode === 'flutter') {
+        document.getElementById('code-filename').textContent = 'liquid_glass_fitness_navbar.dart (pub.dev/packages/liquid_glass_renderer)';
+        document.getElementById('code-content').textContent = FLUTTER_CODE;
+      } else {
+        document.getElementById('code-filename').textContent = 'LiquidGlassFitnessNavBar.tsx (React Native LiquidGlassButton + NavBar)';
+        document.getElementById('code-content').textContent = RN_CODE;
+      }
+    }
+
+    function copyCurrentCode(btn) {
+      navigator.clipboard.writeText(document.getElementById('code-content').textContent);
+      btn.textContent = 'Copied!';
+      setTimeout(() => (btn.textContent = 'Copy Code'), 1500);
+    }
+
+    // Initialize default code tab
+    document.getElementById('code-content').textContent = FLUTTER_CODE;
+  </script>
+</body>
+</html>
