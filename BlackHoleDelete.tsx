@@ -25,6 +25,8 @@
  *
  * Requirements:
  *  - react-native >= 0.71
+ *  - react-native-svg (for the built-in SVG icons — install via
+ *    `npm i react-native-svg` and link it in your RN project)
  *  - react-native-reanimated >= 3.x (wrap your app in <ReanimatedRoot>
  *    when using Reanimated >= 3.16)
  *
