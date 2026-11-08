@@ -2,12 +2,6 @@ name: Build native Android app
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - arena/98559594-templr
-    paths:
-      - 'flutter_app/**'
-      - '.github/workflows/android-release.yml'
 
 permissions:
   contents: write
