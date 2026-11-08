@@ -1,0 +1,54 @@
+name: Build native Android app
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - arena/98559594-templr
+    paths:
+      - 'flutter_app/**'
+      - '.github/workflows/android-release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Android project files
+        working-directory: flutter_app
+        run: flutter create --platforms=android --project-name daylight_todo --org com.daylight .
+
+      - name: Get packages and build release APK
+        working-directory: flutter_app
+        run: |
+          flutter pub get
+          flutter build apk --release
+
+      - name: Publish installable APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: daylight-v1.0.0
+          name: daylight 1.0.0
+          body: |
+            Native Android build of daylight to-do.
+
+            Download `app-release.apk`, install it on Android, then open daylight. Android may ask you to allow installation from your browser.
+          files: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+          make_latest: true
