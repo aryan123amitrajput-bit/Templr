@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   publish:
@@ -23,3 +23,13 @@ jobs:
           node-version: 22
       - run: npm install --prefix .snack-publish --no-package-lock --no-audit --no-fund
       - run: node .snack-publish/publish.cjs
+      - name: Record publishing result
+        if: always()
+        run: |
+          git config user.name "arena-agent"
+          git config user.email "arena-agent@users.noreply.github.com"
+          git add snack-result.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Record Snack publishing result"
+            git push
+          fi

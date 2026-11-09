@@ -32,7 +32,7 @@ async function publish() {
   const output = { ...result, editorUrl, sdkVersion: "55.0.0" };
 
   fs.writeFileSync(
-    path.join(__dirname, "result.json"),
+    path.join(root, "snack-result.json"),
     JSON.stringify(output, null, 2),
   );
   console.log(`LIQUID_GLASS_SNACK_URL=${editorUrl}`);
@@ -42,6 +42,15 @@ async function publish() {
 publish().then(
   () => process.exit(0),
   (error) => {
+    const output = {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    };
+    fs.writeFileSync(
+      path.resolve(__dirname, "..", "snack-result.json"),
+      JSON.stringify(output, null, 2),
+    );
     console.error(error);
     process.exit(1);
   },
