@@ -1,30 +1,32 @@
-# Premium Liquid Glass Button — Android
+# Premium Liquid Glass Button — Expo Go SDK 58
 
-## Open the finished Expo Snack
+## Open on your Android device
 
-**[Open Premium Liquid Glass Button in Expo Snack](https://snack.expo.dev/IaW4nq-falIDeqy_QtyNy?platform=android)**
+**[Open Liquid Glass directly in Expo Go](exp://bh3reky-anonymous-8081.exp.direct)**
 
-The Snack is already created and saved with the complete `App.js`, Expo SDK 55, Android preview, and all required dependencies. There is nothing to copy or install manually. Choose **Run on device** in Snack and scan the QR code with Expo Go.
+Expo Go URL:
 
-The repository's `App.js` is a readable source copy; the saved Snack is the ready-to-run deliverable.
+```text
+exp://bh3reky-anonymous-8081.exp.direct
+```
 
-## Dependencies already configured
+You can also scan `expo-go-sdk58-qr.png` with Expo Go. The server is live now and its public Android manifest reports `exposdk:58.0.0`.
 
-| Package                | SDK 55-compatible version |
-| ---------------------- | ------------------------- |
-| `expo-blur`            | `~55.0.18`                |
-| `expo-linear-gradient` | `~55.0.18`                |
-| `expo-haptics`         | `~55.0.18`                |
+**Temporary server:** this official Expo tunnel remains available while its hosting job is running, for up to 60 minutes from publication. The complete permanent SDK 58 project is in `liquid-glass-sdk58/` if the server needs to be restarted later.
 
-React and React Native are supplied by the Snack runtime. No Reanimated, SVG, WebView, custom native module, or development build is needed.
+## Why the earlier Snack showed an incompatibility error
 
-## What is implemented
+Your installed Expo Go uses **SDK 58**. The first saved Snack used SDK 55, and Expo Go requires the Snack runtime to match its own SDK. Expo currently does not provide an SDK 58 Snack runtime, so republishing the Snack with an SDK 58 manifest does not solve physical-device compatibility. The direct SDK 58 Expo server above bypasses that Snack limitation; it is not a WebView or website.
 
-- A real React Native `Pressable`, sized **220 × 64 px** with a 32 px pill radius.
-- `BlurTargetView` and `BlurView` using Expo SDK 55's native Android blur implementation.
-- The `dimezisBlurViewSdk31Plus` blur method on Android 12 and newer, avoiding the expensive legacy blur path on older devices.
-- A complete translucent lens fallback when native blur is unavailable, with the same layout and interaction.
-- Layered lens tint, chromatic refraction, internal highlights, depth shading, a variable-opacity rim, and specular accents.
-- Native-driver press scale, highlight movement, opacity changes, and spring release; no perpetual animations.
-- Success haptic feedback on activation, safely ignored when haptics are unavailable.
-- A dark gradient background with violet, cyan, and rose lighting behind the glass.
+## What is already configured
+
+| Package                | Version   |
+| ---------------------- | --------- |
+| `expo`                 | `58.0.23` |
+| `expo-blur`            | `~58.0.5` |
+| `expo-linear-gradient` | `~58.0.3` |
+| `expo-haptics`         | `~58.0.7` |
+| `react`                | `19.3.0`  |
+| `react-native`         | `0.88.1`  |
+
+The project includes its lockfile and uses `BlurTargetView` plus `BlurView` for real Android backdrop blur on Android 12 and newer. Older devices retain the layered translucent fallback. Press/release springs, moving specular highlights, depth shading, refraction, and haptics are implemented with Expo Go-compatible APIs only.
