@@ -25,6 +25,7 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund @expo/ngrok
         working-directory: liquid-glass-sdk58
       - name: Start Expo tunnel
+        working-directory: liquid-glass-sdk58
         run: |
           CI=1 npx expo start --tunnel --port 8081 > /tmp/liquid-expo.log 2>&1 &
           echo $! > /tmp/liquid-expo.pid
@@ -45,7 +46,7 @@ jobs:
             cat /tmp/liquid-expo.log
             exit 1
           fi
-          EXPO_URL="$EXPO_URL" node -e 'require("fs").writeFileSync("expo-go-result.json", JSON.stringify({ ok: true, sdkVersion: "58.0.0", url: process.env.EXPO_URL, expires: "This temporary tunnel stays open while the GitHub Actions job is running (up to 60 minutes)." }, null, 2))'
+          EXPO_URL="$EXPO_URL" node -e 'require("fs").writeFileSync("../expo-go-result.json", JSON.stringify({ ok: true, sdkVersion: "58.0.0", url: process.env.EXPO_URL, expires: "This temporary tunnel stays open while the GitHub Actions job is running (up to 60 minutes)." }, null, 2))'
           echo "EXPO_GO_URL=$EXPO_URL"
       - name: Record tunnel result
         if: always()
@@ -53,7 +54,7 @@ jobs:
           cp /tmp/liquid-expo.log expo-tunnel.log
           git config user.name "arena-agent"
           git config user.email "arena-agent@users.noreply.github.com"
-          git add expo-go-result.json expo-tunnel.log
+          git add -A
           if ! git diff --cached --quiet; then
             git commit -m "Record Expo Go SDK 58 tunnel result"
             git push
