@@ -64,6 +64,4 @@ jobs:
           fi
       - name: Keep tunnel available
         if: success()
-        run: |
-          tail -f /tmp/liquid-expo.log &
-          wait "$(cat /tmp/liquid-expo.pid)"
+        run: tail -f /tmp/liquid-expo.log
