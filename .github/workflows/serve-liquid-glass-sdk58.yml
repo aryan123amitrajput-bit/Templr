@@ -54,7 +54,10 @@ jobs:
           cp /tmp/liquid-expo.log expo-tunnel.log
           git config user.name "arena-agent"
           git config user.email "arena-agent@users.noreply.github.com"
-          git add -A
+          git add -f expo-tunnel.log
+          if [ -f expo-go-result.json ]; then
+            git add expo-go-result.json
+          fi
           if ! git diff --cached --quiet; then
             git commit -m "Record Expo Go SDK 58 tunnel result"
             git push
