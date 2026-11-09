@@ -1,11 +1,10 @@
 /**
  * Expo Snack — Android Liquid Glass Button
  *
- * Add these packages in Snack's Dependencies tab:
- *   expo-blur
- *   expo-linear-gradient
- *   expo-haptics
+ * Finished Snack (dependencies already configured):
+ *   https://snack.expo.dev/IaW4nq-falIDeqy_QtyNy?platform=android
  *
+ * Expo SDK 55 packages: expo-blur, expo-linear-gradient, expo-haptics.
  * React and react-native are already supplied by Snack. No other packages,
  * native builds, WebView, Reanimated, or SVG are required.
  */
