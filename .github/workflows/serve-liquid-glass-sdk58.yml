@@ -1,0 +1,55 @@
+name: Serve Liquid Glass to Expo Go SDK 58
+
+on:
+  push:
+    branches:
+      - arena/2b2c7bad-templr
+    paths:
+      - liquid-glass-sdk58/**
+      - .github/workflows/serve-liquid-glass-sdk58.yml
+
+permissions:
+  contents: write
+
+jobs:
+  expo-tunnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+        working-directory: liquid-glass-sdk58
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund @expo/ngrok
+        working-directory: liquid-glass-sdk58
+      - name: Start Expo tunnel and publish its URL
+        run: |
+          CI=1 npx expo start --tunnel --port 8081 > /tmp/liquid-expo.log 2>&1 &
+          EXPO_PID=$!
+          EXPO_URL=""
+          for attempt in $(seq 1 90); do
+            EXPO_URL=$(grep -oE 'exp://[^[:space:]]+\.exp\.direct(:80)?' /tmp/liquid-expo.log | head -1 || true)
+            if [ -n "$EXPO_URL" ]; then
+              break
+            fi
+            if ! kill -0 "$EXPO_PID" 2>/dev/null; then
+              cat /tmp/liquid-expo.log
+              exit 1
+            fi
+            sleep 2
+          done
+          if [ -z "$EXPO_URL" ]; then
+            cat /tmp/liquid-expo.log
+            exit 1
+          fi
+          EXPO_URL="$EXPO_URL" node -e 'require("fs").writeFileSync("expo-go-result.json", JSON.stringify({ ok: true, sdkVersion: "58.0.0", url: process.env.EXPO_URL, expires: "This temporary tunnel stays open while the GitHub Actions job is running (up to 60 minutes)." }, null, 2))'
+          git config user.name "arena-agent"
+          git config user.email "arena-agent@users.noreply.github.com"
+          git add expo-go-result.json
+          git commit -m "Publish temporary Expo Go SDK 58 tunnel"
+          git push
+          echo "EXPO_GO_URL=$EXPO_URL"
+          tail -f /tmp/liquid-expo.log &
+          wait "$EXPO_PID"

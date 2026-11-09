@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Liquid Glass",
+    "slug": "liquid-glass-sdk58",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#02030A",
+    "platforms": ["android"]
+  }
+}
