@@ -32,7 +32,7 @@ jobs:
           EXPO_PID=$!
           EXPO_URL=""
           for attempt in $(seq 1 90); do
-            EXPO_URL=$(grep -oE 'exp://[^[:space:]]+\.exp\.direct(:80)?' /tmp/liquid-expo.log | head -1 || true)
+            EXPO_URL=$(node -e 'fetch("http://127.0.0.1:8081/", { headers: { "expo-platform": "android" } }).then((response) => response.json()).then((manifest) => { const host = manifest.extra?.expoClient?.hostUri; const asset = manifest.launchAsset?.url || ""; if (host && !host.includes("localhost")) { const scheme = asset.startsWith("https://") ? "exps" : "exp"; console.log(`${scheme}://${host}`); } }).catch(() => {})')
             if [ -n "$EXPO_URL" ]; then
               break
             fi
