@@ -1,10 +1,9 @@
 /**
  * Expo Snack — Android Liquid Glass Button
  *
- * Finished Snack (dependencies already configured):
- *   https://snack.expo.dev/IaW4nq-falIDeqy_QtyNy?platform=android
+ * Built for Expo Go SDK 58 with all dependencies configured in Expo Snack.
  *
- * Expo SDK 55 packages: expo-blur, expo-linear-gradient, expo-haptics.
+ * Packages: expo-blur, expo-linear-gradient, expo-haptics.
  * React and react-native are already supplied by Snack. No other packages,
  * native builds, WebView, Reanimated, or SVG are required.
  */
@@ -189,7 +188,7 @@ function LiquidGlassButton({ blurTarget, onConfirm }) {
         />
 
         <View style={styles.glassClip}>
-          {/* SDK 55 uses a BlurTargetView for real Android backdrop blur.
+          {/* SDK 58 uses a BlurTargetView for real Android backdrop blur.
               The SDK 31+ method avoids expensive legacy rendering on older
               devices, where these gradients provide the fallback instead. */}
           <BlurView
