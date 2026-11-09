@@ -27,7 +27,7 @@ jobs:
       - name: Start Expo tunnel
         working-directory: liquid-glass-sdk58
         run: |
-          CI=1 npx expo start --tunnel --port 8081 > /tmp/liquid-expo.log 2>&1 &
+          CI=1 npx expo start --tunnel ngrok --port 8081 > /tmp/liquid-expo.log 2>&1 &
           echo $! > /tmp/liquid-expo.pid
           EXPO_PID=$!
           EXPO_URL=""
